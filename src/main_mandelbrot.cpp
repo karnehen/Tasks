@@ -105,7 +105,7 @@ int main(int argc, char **argv)
     }
 
 
-    ProgramWrapper programWrapper(openCLWrapper, "src/cl/mandelbrot.cl");
+    ProgramWrapper programWrapper(openCLWrapper, "../src/cl/mandelbrot.cl");
     KernelWrapper kernelWrapper(programWrapper, "mandelbrot");
 
     {

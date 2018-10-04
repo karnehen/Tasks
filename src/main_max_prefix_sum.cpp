@@ -75,7 +75,7 @@ int main(int argc, char **argv)
         {
             // TODO: implement on OpenCL
             OpenCLWrapper openCLWrapper(argc, argv);
-            ProgramWrapper programWrapper(openCLWrapper, "src/cl/max_prefix_sum.cl");
+            ProgramWrapper programWrapper(openCLWrapper, "../src/cl/max_prefix_sum.cl");
             KernelWrapper kernelWrapper(programWrapper, "max_prefix_sum");
             KernelWrapper kernelWrapperFast(programWrapper, "max_prefix_sum_fast");
 

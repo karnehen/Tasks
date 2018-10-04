@@ -63,7 +63,7 @@ int main(int argc, char **argv)
     {
         // TODO: implement on OpenCL
         OpenCLWrapper openCLWrapper(argc, argv);
-        ProgramWrapper programWrapper(openCLWrapper, "src/cl/sum.cl");
+        ProgramWrapper programWrapper(openCLWrapper, "../src/cl/sum.cl");
         KernelWrapper kernelWrapper(programWrapper, "sum");
         KernelWrapper kernelWrapperFast(programWrapper, "sum_fast");
 
