@@ -128,13 +128,15 @@ namespace ocl {
 		}
 
 	protected:
-		void		setArg(cl_uint arg_index, size_t arg_size, const void *arg_value);
+		void		ptrsetArg(cl_uint arg_index, size_t arg_size, const void *arg_value);
 
 		void		setArg(cl_uint arg_index, const Arg &arg)
 		{
 			if (!arg.is_null)
 				setArg(arg_index, arg.size, arg.value);
 		}
+
+		void setArg(cl_uint arg_index, size_t arg_size, const void *arg_value);
 
 		cl_kernel	kernel_;
 		size_t		work_group_size_;
