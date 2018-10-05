@@ -5,6 +5,7 @@
 #include <libgpu/device.h>
 #include <libutils/misc.h>
 #include <CL/cl.h>
+#include <libgpu/context.h>
 
 class OpenCLWrapper {
 public:
@@ -23,13 +24,13 @@ public:
 
     template <class T>
     void readMemoryBuffer(cl_mem buffer, T* ptr, size_t size) {
-        OCL_SAFE_CALL(clEnqueueReadBuffer(command_queue, buffer, CL_TRUE, 0, size * sizeof(T), ptr,
+        OCL_SAFE_CALL(clEnqueueReadBuffer(context_.cl().get()->queue(), buffer, CL_TRUE, 0, size * sizeof(T), ptr,
                 0, nullptr, nullptr));
     }
 
     template <class T>
     void writeMemoryBuffer(cl_mem buffer, T* ptr, size_t size) {
-        OCL_SAFE_CALL(clEnqueueWriteBuffer(command_queue, buffer, CL_TRUE, 0, size * sizeof(T), ptr,
+        OCL_SAFE_CALL(clEnqueueWriteBuffer(context_.cl().get()->queue(), buffer, CL_TRUE, 0, size * sizeof(T), ptr,
                 0, nullptr, nullptr));
     }
 
@@ -39,17 +40,17 @@ public:
     cl_context context() const;
     cl_device_id deviceId() const;
     const cl_device_id* deviceIdPtr() const;
+    size_t warpSize() const;
 
 private:
-    cl_command_queue command_queue;
-    cl_context context_;
     gpu::Device device;
+    gpu::Context context_;
     std::set<cl_mem> memory_buffers;
 
     template <class T>
     cl_mem createMemoryBuffer(size_t size, cl_mem_flags flags, void* ptr) {
         cl_int error_code;
-        cl_mem result = (clCreateBuffer(context_, flags, size * sizeof(T), ptr, &error_code));
+        cl_mem result = (clCreateBuffer(context_.cl().get()->context(), flags, size * sizeof(T), ptr, &error_code));
         OCL_SAFE_CALL(error_code);
         memory_buffers.insert(result);
 

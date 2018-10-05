@@ -82,9 +82,9 @@ __kernel void max_prefix_sum_fast(__global int* as, int size, __global int* max_
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    if (localId < groupSize) {
-        int step;
-        for (step = 1; step < groupSize; step *= 2) {
+    int step;
+    for (step = 1; step < groupSize; step *= 2) {
+        if (localId < groupSize) {
             if (localId >= step) {
                 buffer[localId] = local_as[localId - step] + local_as[localId];
             }
@@ -97,8 +97,10 @@ __kernel void max_prefix_sum_fast(__global int* as, int size, __global int* max_
             if (localIdFourth < realGroupSize) {
                 buffer[localIdFourth] = local_as[localIdFourth - step] + local_as[localIdFourth];
             }
+        }
 
-            barrier(CLK_LOCAL_MEM_FENCE);
+        barrier(CLK_LOCAL_MEM_FENCE);
+        if (localId < groupSize) {
             local_as[localId] = buffer[localId];
             if (localIdSecond < realGroupSize) {
                 local_as[localIdSecond] = buffer[localIdSecond];
@@ -109,65 +111,80 @@ __kernel void max_prefix_sum_fast(__global int* as, int size, __global int* max_
             if (localIdFourth < realGroupSize) {
                 local_as[localIdFourth] = buffer[localIdFourth];
             }
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
+    }
+
+    unsigned int maxStep = min(groupSize * 2, realGroupSize);
+
+    for (; step < maxStep; step *= 2) {
+        if (localId < groupSize) {
+            if (localIdSecond < realGroupSize) {
+                buffer[localIdSecond] = local_as[localIdSecond - step] + local_as[localIdSecond];
+            }
+            if (localIdThird < realGroupSize) {
+                buffer[localIdThird] = local_as[localIdThird - step] + local_as[localIdThird];
+            }
+            if (localIdFourth < realGroupSize) {
+                buffer[localIdFourth] = local_as[localIdFourth - step] + local_as[localIdFourth];
+            }
+        }
+
+        barrier(CLK_LOCAL_MEM_FENCE);
+        if (localId < groupSize) {
+            if (localIdSecond < realGroupSize) {
+                local_as[localIdSecond] = buffer[localIdSecond];
+            }
+            if (localIdThird < realGroupSize) {
+                local_as[localIdThird] = buffer[localIdThird];
+            }
+            if (localIdFourth < realGroupSize) {
+                local_as[localIdFourth] = buffer[localIdFourth];
+            }
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
+    }
+
+    maxStep = min(groupSize * 3, realGroupSize);
+
+    for (; step < maxStep; step *= 2) {
+        if (localId < groupSize) {
+            if (localIdThird < realGroupSize) {
+                buffer[localIdThird] = local_as[localIdThird - step] + local_as[localIdThird];
+            }
+            if (localIdFourth < realGroupSize) {
+                buffer[localIdFourth] = local_as[localIdFourth - step] + local_as[localIdFourth];
+            }
+        }
+
+        barrier(CLK_LOCAL_MEM_FENCE);
+        if (localId < groupSize) {
+            if (localIdThird < realGroupSize) {
+                local_as[localIdThird] = buffer[localIdThird];
+            }
+            if (localIdFourth < realGroupSize) {
+                local_as[localIdFourth] = buffer[localIdFourth];
+            }
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
+    }
+
+    for (; step < realGroupSize; step *= 2) {
+        if (localId < groupSize && localIdFourth < realGroupSize) {
+            buffer[localIdFourth] = local_as[localIdFourth - step] + local_as[localIdFourth];
+        }
+
+        if (realGroupSize - step >= realGroupSize % WARP_SIZE) {
             barrier(CLK_LOCAL_MEM_FENCE);
         }
-
-        if (localIdSecond < realGroupSize) {
-            unsigned int maxStep = min(groupSize * 2, realGroupSize);
-
-            for (; step < maxStep; step *= 2) {
-                buffer[localIdSecond] = local_as[localIdSecond - step] + local_as[localIdSecond];
-                if (localIdThird < realGroupSize) {
-                    buffer[localIdThird] = local_as[localIdThird - step] + local_as[localIdThird];
-                }
-                if (localIdFourth < realGroupSize) {
-                    buffer[localIdFourth] = local_as[localIdFourth - step] + local_as[localIdFourth];
-                }
-
-                barrier(CLK_LOCAL_MEM_FENCE);
-                local_as[localIdSecond] = buffer[localIdSecond];
-                if (localIdThird < realGroupSize) {
-                    local_as[localIdThird] = buffer[localIdThird];
-                }
-                if (localIdFourth < realGroupSize) {
-                    local_as[localIdFourth] = buffer[localIdFourth];
-                }
-                barrier(CLK_LOCAL_MEM_FENCE);
-            }
+        if (localId < groupSize && localIdFourth < realGroupSize) {
+            local_as[localIdFourth] = buffer[localIdFourth];
         }
-
-        if (localIdThird < realGroupSize) {
-            unsigned int maxStep = min(groupSize * 3, realGroupSize);
-
-            for (; step < maxStep; step *= 2) {
-                buffer[localIdThird] = local_as[localIdThird - step] + local_as[localIdThird];
-                if (localIdFourth < realGroupSize) {
-                    buffer[localIdFourth] = local_as[localIdFourth - step] + local_as[localIdFourth];
-                }
-
-                barrier(CLK_LOCAL_MEM_FENCE);
-                local_as[localIdThird] = buffer[localIdThird];
-                if (localIdFourth < realGroupSize) {
-                    local_as[localIdFourth] = buffer[localIdFourth];
-                }
-                barrier(CLK_LOCAL_MEM_FENCE);
-            }
-        }
-
-        if (localIdFourth < realGroupSize) {
-            for (; step < realGroupSize; step *= 2) {
-                buffer[localIdFourth] = local_as[localIdFourth - step] + local_as[localIdFourth];
-
-                if (realGroupSize - step >= realGroupSize % 32) {
-                    barrier(CLK_LOCAL_MEM_FENCE);
-                }
-                local_as[localIdFourth] = buffer[localIdFourth];
-                if (realGroupSize - step >= realGroupSize % 32) {
-                    barrier(CLK_LOCAL_MEM_FENCE);
-                }
-            }
+        if (realGroupSize - step >= realGroupSize % WARP_SIZE) {
+            barrier(CLK_LOCAL_MEM_FENCE);
         }
     }
+
 
     // local_as is used for max sum, buffer ist used for prefixes
     if (localId < groupSize) {
@@ -214,7 +231,7 @@ __kernel void max_prefix_sum_fast(__global int* as, int size, __global int* max_
             }
         }
 
-        if (length > 32) {
+        if (length > WARP_SIZE) {
             barrier(CLK_LOCAL_MEM_FENCE);
         }
     }

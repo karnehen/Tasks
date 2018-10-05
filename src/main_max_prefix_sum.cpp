@@ -131,6 +131,7 @@ int main(int argc, char **argv)
             {
                 size_t groupCount = ((n + 3) / 4 + groupSize - 1) / groupSize;
                 size_t workSize = groupCount * groupSize;
+                std::cout << n << ' ' << groupSize << ' ' << groupCount << ' ' << workSize << std::endl;
 
                 std::vector<int> max_sums(groupCount, 0);
                 std::vector<int> prefixes(groupCount, 0);
