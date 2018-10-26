@@ -408,7 +408,7 @@ ProgramBinaries::ProgramBinaries(std::vector<VersionedBinary> binaries, std::str
 	defines_	= defines;
 }
 
-ProgramBinaries::ProgramBinaries(const char *source_code, size_t source_code_length, std::string defines, std::string program_name) : binaries_({VersionedBinary(source_code, source_code_length, 0, 1, 2)})
+ProgramBinaries::ProgramBinaries(const char *source_code, size_t source_code_length, std::string defines, std::string program_name) : binaries_({VersionedBinary(source_code, source_code_length, 0, 1, 1)})
 {
 	static int next_program_id = 0;
 	program_name_ = program_name;
