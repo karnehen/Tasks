@@ -76,9 +76,9 @@ int main(int argc, char **argv)
                     bitonic.exec(gpu::WorkSize(workGroupSize, global_work_size),
                                  as_gpu, n, max_step, step);
                     step /= 2;
-                } while (2 * step > workGroupSize);
+                } while ((2 * step > workGroupSize) || (step > 0 && context.cl()->wavefrontSize() == 1));
 
-                if (max_step == 1) {
+                if (max_step == 1 && context.cl()->wavefrontSize() > 1) {
                     max_step = workGroupSize;
                 }
             }

@@ -13,7 +13,7 @@ __kernel void bitonic(__global float* as, unsigned int n,
 
     unsigned int global_id = get_global_id(0);
 
-    if (step * 2 <= WORK_SIZE) {
+    if (step * 2 <= WORK_SIZE && WARP_SIZE > 1) {
         unsigned int local_id = get_local_id(0);
         unsigned int group_first = 2 * get_group_id(0) * get_local_size(0);
 
